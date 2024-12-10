@@ -5,7 +5,6 @@
 # !pip install transformers
 # !pip install huggingface-hub
 
-# Import necessary libraries
 from flask import Flask, request, jsonify
 from flask_cors import CORS  # For handling CORS
 from transformers import pipeline
@@ -38,27 +37,35 @@ app = Flask(__name__)
 CORS(app)
 
 # Initialize transcriber
-transcriber = pipeline("automatic-speech-recognition", model="openai/whisper-large-v3")
+transcriber = pipeline("automatic-speech-recognition", model="openai/whisper-large-v3", device=0)
 
 # Configure Gemini API
 genai.configure(api_key="AIzaSyAcfbS0e_pWxRY-9_NMWjHlqXy64djI6Sc")  # Replace with your actual Gemini API key
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 @app.route('/translate', methods=['POST'])
-def translate_audio():
+def translate():
     try:
-        # Save the uploaded audio file
-        file = request.files['audio']
-        file.save("audio.wav")
+        # Check if 'audio' is in the request (handling audio files)
+        if 'audio' in request.files:
+            # Save the uploaded audio file
+            file = request.files['audio']
+            file.save("audio.wav")
 
-        # Transcribe the audio file
-        transcription = transcriber("audio.wav")['text']
+            # Transcribe the audio file
+            transcription = transcriber("audio.wav")['text']
+        else:
+            # Handle text input directly
+            transcription = request.json.get('text')
+            if not transcription:
+                return jsonify({"error": "No text or audio provided for translation"}), 400
 
         # Send the transcription to Gemini for translation
         prompt = f"""Your role is to act as a translation expert. I will provide text in any language, and your task is to:
         1. Translate the text into both Original Urdu and Roman Urdu.
         2. If the text is already in Urdu, simply return the original text without modification.
         3. Ensure the response contains only the translations and nothing else.
+        4. Don't return the 'original urdu' and 'roman urdu' with the response. Only return the translations.
         TEXT: '{transcription}'"""
         response = model.generate_content(prompt)
 
