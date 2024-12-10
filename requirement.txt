@@ -1,0 +1,5 @@
+flask-cors
+pyngrok
+google-generativeai
+transformers
+huggingface-hub
