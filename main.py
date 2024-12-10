@@ -6,12 +6,22 @@ from pyngrok import ngrok, conf
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 # Load environment variables
 load_dotenv()
 
 # Set up Ngrok
-ngrok.set_auth_token(os.getenv("NGROK_AUTH_TOKEN"))
+# ngrok.set_auth_token(os.getenv("NGROK_AUTH_TOKEN"))
+
+if os.getenv("RENDER"):
+    public_url = "https://urdu-translator.onrender.com"
+else:
+    public_url = ngrok.connect(5000)
+print(f"Public URL: {public_url}")
+
 
 os.system("killall -9 ngrok")
 
@@ -79,4 +89,5 @@ def translate():
         return jsonify({"error": str(e)})
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host="0.0.0.0", port=5000)
+

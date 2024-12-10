@@ -1,6 +1,8 @@
+flask
 flask-cors
 pyngrok
 google-generativeai
 transformers
 huggingface-hub
 python-dotenv
+PyTorch
