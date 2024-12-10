@@ -1,20 +1,17 @@
-# Install required packages
-# !pip install flask-cors
-# !pip install pyngrok
-# !pip install google-generativeai
-# !pip install transformers
-# !pip install huggingface-hub
-
 from flask import Flask, request, jsonify
-from flask_cors import CORS  # For handling CORS
+from flask_cors import CORS
 from transformers import pipeline
 from huggingface_hub import login
 from pyngrok import ngrok, conf
 import google.generativeai as genai
 import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Set up Ngrok
-ngrok.set_auth_token("2puHmwrbAwbjQZxsB4tNvueD5Dz_5nwZ6mPTf7pkSJsswxUMh")  # Replace with your actual Ngrok token
+ngrok.set_auth_token(os.getenv("NGROK_AUTH_TOKEN"))
 
 os.system("killall -9 ngrok")
 
@@ -30,7 +27,7 @@ public_url = ngrok.connect(5000)
 print(f"ngrok URL: {public_url}")
 
 # HuggingFace login
-login(token="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")
+login(token=os.getenv("HF_TOKEN"))
 
 # Initialize Flask app and CORS
 app = Flask(__name__)
@@ -40,7 +37,7 @@ CORS(app)
 transcriber = pipeline("automatic-speech-recognition", model="openai/whisper-large-v3", device=0)
 
 # Configure Gemini API
-genai.configure(api_key="AIzaSyAcfbS0e_pWxRY-9_NMWjHlqXy64djI6Sc")  # Replace with your actual Gemini API key
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 @app.route('/translate', methods=['POST'])
